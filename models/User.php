@@ -11,6 +11,7 @@ use webvimark\modules\UserManagement\models\rbacDB\Route;
 use webvimark\modules\UserManagement\UserManagementModule;
 use Yii;
 use yii\behaviors\TimestampBehavior;
+use \common\models\Person;
 
 /**
  * This is the model class for table "user".
@@ -387,6 +388,16 @@ class User extends UserIdentity
 		if ( $this->password )
 		{
 			$this->setPassword($this->password);
+		}
+
+		$hasPerson = Person::find()->where(['user_id' => $this->id])->one();
+	
+		if(!$hasPerson) {
+			$person = new Person();
+			$person->user_id = $this->id;
+			$person->first_name = $this->username;
+			$person->email = $this->email;
+			$person->save(false);
 		}
 
 		return parent::beforeSave($insert);
