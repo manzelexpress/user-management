@@ -13,6 +13,7 @@ use Yii;
 use yii\behaviors\TimestampBehavior;
 use \common\models\Person;
 
+
 /**
  * This is the model class for table "user".
  *
@@ -390,16 +391,6 @@ class User extends UserIdentity
 			$this->setPassword($this->password);
 		}
 
-		$hasPerson = Person::find()->where(['user_id' => $this->id])->one();
-	
-		if(!$hasPerson) {
-			$person = new Person();
-			$person->user_id = $this->id;
-			$person->first_name = $this->username;
-			$person->email = $this->email;
-			$person->save(false);
-		}
-
 		return parent::beforeSave($insert);
 	}
 
@@ -427,5 +418,25 @@ class User extends UserIdentity
 		}
 
 		return parent::beforeDelete();
+	}
+
+
+	public function afterSave($insert, $changedAttributes){
+
+		parent::afterSave($insert, $changedAttributes);
+
+		$hasPerson = Person::find()->where(['user_id' => $this->id])->one();
+
+		if(!$hasPerson) {
+			$person = new Person();
+			$person->user_id = $this->id;
+			$person->type = Person::TYPE_STAFF;
+			$person->first_name = $this->username;
+			$person->last_name = $this->username;
+			$person->email = ($this->email) ? $this->email : $this->username;
+			if(!$person->save(false)) {
+				print_r($person->errors); die();
+			}
+		}
 	}
 }
