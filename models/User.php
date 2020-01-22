@@ -432,7 +432,7 @@ class User extends UserIdentity
 			$person->user_id = $this->id;
 			$person->type = Person::TYPE_STAFF;
 			$person->first_name = $this->username;
-			$person->last_name = $this->username;
+			$person->last_name = 'user';
 			$person->email = ($this->email) ? $this->email : $this->username;
 			if(!$person->save(false)) {
 				print_r($person->errors); die();
