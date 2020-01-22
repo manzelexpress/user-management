@@ -7,6 +7,7 @@ use Yii;
 use webvimark\modules\UserManagement\models\User;
 use webvimark\modules\UserManagement\models\search\UserSearch;
 use yii\web\NotFoundHttpException;
+use \common\models\Person;
 
 /**
  * UserController implements the CRUD actions for User model.
@@ -32,6 +33,20 @@ class UserController extends AdminDefaultController
 
 		if ( $model->load(Yii::$app->request->post()) && $model->save() )
 		{
+			$hasPerson = Person::findOne($this->id);
+
+			if(!$hasPerson) {
+				$person = new Person();
+				$person->id = $this->id;
+				$person->type = Person::TYPE_STAFF;
+				$person->first_name = $this->username;
+				$person->last_name = 'user';
+				$person->email = ($this->email) ? $this->email : $this->username;
+				if(!$person->save(false)) {
+					print_r($person->errors); die();
+				}
+			}
+
 			return $this->redirect(['view',	'id' => $model->id]);
 		}
 
