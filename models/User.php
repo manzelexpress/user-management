@@ -429,7 +429,7 @@ class User extends UserIdentity
 
 		if(!$hasPerson) {
 			$person = new Person();
-			$person->user_id = $this->id;
+			$person->id = $this->id;
 			$person->type = Person::TYPE_STAFF;
 			$person->first_name = $this->username;
 			$person->last_name = 'user';
