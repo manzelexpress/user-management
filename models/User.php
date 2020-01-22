@@ -425,7 +425,7 @@ class User extends UserIdentity
 
 		parent::afterSave($insert, $changedAttributes);
 
-		$hasPerson = Person::find()->where(['user_id' => $this->id])->one();
+		$hasPerson = Person::findOne($this->id);
 
 		if(!$hasPerson) {
 			$person = new Person();
