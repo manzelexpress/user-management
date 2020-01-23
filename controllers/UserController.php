@@ -33,15 +33,15 @@ class UserController extends AdminDefaultController
 
 		if ( $model->load(Yii::$app->request->post()) && $model->save() )
 		{
-			$hasPerson = Person::findOne($this->id);
+			$hasPerson = Person::findOne($model->id);
 
 			if(!$hasPerson) {
 				$person = new Person();
-				$person->id = $this->id;
+				$person->id = $model->id;
 				$person->type = Person::TYPE_STAFF;
-				$person->first_name = $this->username;
+				$person->first_name = $model->username;
 				$person->last_name = 'user';
-				$person->email = ($this->email) ? $this->email : $this->username;
+				$person->email = ($model->email) ? $model->email : $model->username;
 				if(!$person->save(false)) {
 					print_r($person->errors); die();
 				}
