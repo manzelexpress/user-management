@@ -32,13 +32,17 @@ class UserController extends AdminDefaultController
     {
         $model = new User(['scenario'=>'newUser']);
 
+        if(Yii::$app->request->post()) {
+            $model->load(Yii::$app->request->post());
+        }
+
         $max = (new Query())->select('max(id) as id')->from('person')->one();
         $next_id = $max['id'] + 1;
         $model->id = $next_id;
 
         $transaction = Yii::$app->db->beginTransaction();
 
-        if ( $model->load(Yii::$app->request->post()) && $model->save() )
+        if ($model->save() )
         {
 
             $person = new Person();
