@@ -9,37 +9,37 @@ use webvimark\modules\UserManagement\models\search\UserSearch;
 use yii\db\Query;
 use yii\web\NotFoundHttpException;
 use \common\models\Person;
-use yii\db\Query;
-
 
 /**
  * UserController implements the CRUD actions for User model.
  */
 class UserController extends AdminDefaultController
 {
-	/**
-	 * @var User
-	 */
-	public $modelClass = 'webvimark\modules\UserManagement\models\User';
+    /**
+     * @var User
+     */
+    public $modelClass = 'webvimark\modules\UserManagement\models\User';
 
-	/**
-	 * @var UserSearch
-	 */
-	public $modelSearchClass = 'webvimark\modules\UserManagement\models\search\UserSearch';
+    /**
+     * @var UserSearch
+     */
+    public $modelSearchClass = 'webvimark\modules\UserManagement\models\search\UserSearch';
 
-	/**
-	 * @return mixed|string|\yii\web\Response
-	 */
-	public function actionCreate()
-	{
-		$model = new User(['scenario'=>'newUser']);
+    /**
+     * @return mixed|string|\yii\web\Response
+     */
+    public function actionCreate()
+    {
+        $model = new User(['scenario'=>'newUser']);
 
         $max = (new Query())->select('max(id) as id')->from('person')->one();
         $next_id = $max['id'] + 1;
         $model->id = $next_id;
 
-		if ( $model->load(Yii::$app->request->post()) && $model->save() )
-		{
+        $transaction = Yii::$app->db->beginTransaction();
+
+        if ( $model->load(Yii::$app->request->post()) && $model->save() )
+        {
 
             $person = new Person();
             $person->id = $model->id;
@@ -47,39 +47,44 @@ class UserController extends AdminDefaultController
             $person->first_name = $model->username;
             $person->last_name = 'user';
             $person->email = ($model->email) ? $model->email : $model->username;
+
             if(!$person->save(false)) {
+                $transaction->rollBack();
                 print_r($person->errors); die();
             }
 
-			return $this->redirect(['view',	'id' => $model->id]);
-		}
+            $transaction->commit();
 
-		return $this->renderIsAjax('create', compact('model'));
-	}
 
-	/**
-	 * @param int $id User ID
-	 *
-	 * @throws \yii\web\NotFoundHttpException
-	 * @return string
-	 */
-	public function actionChangePassword($id)
-	{
-		$model = User::findOne($id);
+            return $this->redirect(['view',	'id' => $model->id]);
+        }
 
-		if ( !$model )
-		{
-			throw new NotFoundHttpException('User not found');
-		}
+        return $this->renderIsAjax('create', compact('model'));
+    }
 
-		$model->scenario = 'changePassword';
+    /**
+     * @param int $id User ID
+     *
+     * @throws \yii\web\NotFoundHttpException
+     * @return string
+     */
+    public function actionChangePassword($id)
+    {
+        $model = User::findOne($id);
 
-		if ( $model->load(Yii::$app->request->post()) && $model->save() )
-		{
-			return $this->redirect(['view',	'id' => $model->id]);
-		}
+        if ( !$model )
+        {
+            throw new NotFoundHttpException('User not found');
+        }
 
-		return $this->renderIsAjax('changePassword', compact('model'));
-	}
+        $model->scenario = 'changePassword';
+
+        if ( $model->load(Yii::$app->request->post()) && $model->save() )
+        {
+            return $this->redirect(['view',	'id' => $model->id]);
+        }
+
+        return $this->renderIsAjax('changePassword', compact('model'));
+    }
 
 }
