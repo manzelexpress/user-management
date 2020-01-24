@@ -6,8 +6,11 @@ use webvimark\components\AdminDefaultController;
 use Yii;
 use webvimark\modules\UserManagement\models\User;
 use webvimark\modules\UserManagement\models\search\UserSearch;
+use yii\db\Query;
 use yii\web\NotFoundHttpException;
 use \common\models\Person;
+use yii\db\Query;
+
 
 /**
  * UserController implements the CRUD actions for User model.
@@ -31,21 +34,22 @@ class UserController extends AdminDefaultController
 	{
 		$model = new User(['scenario'=>'newUser']);
 
+        $max = (new Query())->select('max(id) as id')->from('person')->one();
+        $next_id = $max['id'] + 1;
+        $model->id = $next_id;
+
 		if ( $model->load(Yii::$app->request->post()) && $model->save() )
 		{
-			$hasPerson = Person::findOne($model->id);
 
-			if(!$hasPerson) {
-				$person = new Person();
-				$person->id = $model->id;
-				$person->type = Person::TYPE_STAFF;
-				$person->first_name = $model->username;
-				$person->last_name = 'user';
-				$person->email = ($model->email) ? $model->email : $model->username;
-				if(!$person->save(false)) {
-					print_r($person->errors); die();
-				}
-			}
+            $person = new Person();
+            $person->id = $model->id;
+            $person->type = Person::TYPE_STAFF;
+            $person->first_name = $model->username;
+            $person->last_name = 'user';
+            $person->email = ($model->email) ? $model->email : $model->username;
+            if(!$person->save(false)) {
+                print_r($person->errors); die();
+            }
 
 			return $this->redirect(['view',	'id' => $model->id]);
 		}
